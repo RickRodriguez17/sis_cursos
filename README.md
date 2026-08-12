@@ -1,17 +1,42 @@
 # Aula Viva — plataforma de cursos
 
-Plataforma Laravel 12 + Livewire 3 para vender cursos en video con precios en bolivianos (Bs). El checkout agrupa varios cursos en una sola orden y genera un único QR.
+Plataforma Laravel 13 + Livewire 3 para vender cursos en video con precios en bolivianos (Bs). El checkout agrupa varios cursos en una sola orden y genera un único QR.
 
 ## Instalación
 
-Requiere PHP 8.2+, Composer, Node.js 20+ y SQLite o MySQL/MariaDB.
+Requiere PHP 8.4+, Composer, Node.js 22.12+ y SQLite o MySQL/MariaDB.
+
+### Instalación del entorno en Ubuntu 22.04
+
+Los siguientes comandos se verificaron directamente en el host. Son idempotentes:
+
+```bash
+sudo DEBIAN_FRONTEND=noninteractive apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common ca-certificates curl unzip git
+sudo add-apt-repository -y ppa:ondrej/php
+sudo DEBIAN_FRONTEND=noninteractive apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    php8.4-cli php8.4-common php8.4-mbstring php8.4-xml php8.4-curl \
+    php8.4-sqlite3 php8.4-zip php8.4-intl php8.4-gd php8.4-bcmath \
+    php8.4-readline
+
+if ! command -v composer >/dev/null 2>&1; then
+    curl -fsSL https://getcomposer.org/installer | php -- --install-dir=/tmp --filename=composer
+    sudo install -m 0755 /tmp/composer /usr/local/bin/composer
+    rm -f /tmp/composer
+fi
+
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+```
 
 ```bash
 cp .env.example .env
 composer install
 php artisan key:generate
+touch database/database.sqlite
 php artisan migrate --seed
-npm ci
+npm install
 npm run build
 php artisan serve
 ```
