@@ -33,6 +33,26 @@ class CoursePlatformTest extends TestCase
         $this->assertDatabaseHas('payments', ['gateway' => 'fake']);
     }
 
+    public function test_fake_payment_qr_returns_raw_svg(): void
+    {
+        $user = User::factory()->create();
+        $order = Order::create(['user_id' => $user->id, 'total' => 50, 'external_reference' => 'REF']);
+        $order->payment()->create([
+            'gateway' => 'fake',
+            'external_id' => 'REF',
+            'amount' => 50,
+            'payload' => ['qr_payload' => 'SIS-CURSOS|orden=1|monto=50|ref=REF'],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('orders.qr', $order));
+        $content = ltrim($response->getContent());
+
+        $response->assertOk()->assertHeader('Content-Type', 'image/svg+xml');
+        $this->assertTrue(str_starts_with($content, '<'));
+        $this->assertStringContainsString('<svg', $content);
+        $this->assertStringNotContainsString('data:image', $content);
+    }
+
     public function test_webhook_is_idempotent_and_grants_access(): void
     {
         $user = User::factory()->create();

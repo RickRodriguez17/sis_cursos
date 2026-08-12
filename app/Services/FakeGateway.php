@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Contracts\PaymentGateway;
 use App\Models\Order;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
 
 class FakeGateway implements PaymentGateway
 {
@@ -13,7 +11,6 @@ class FakeGateway implements PaymentGateway
     {
         $id = 'FAKE-'.$order->id.'-'.str()->random(10);
         $payload = "SIS-CURSOS|orden={$order->id}|monto={$order->total}|ref={$id}";
-        $svg = (new QRCode(new QROptions(['outputType' => QRCode::OUTPUT_MARKUP_SVG])))->render($payload);
 
         return ['external_id' => $id, 'qr_url' => null, 'payload' => ['simulated' => true, 'qr_payload' => $payload]];
     }
