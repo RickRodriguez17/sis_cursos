@@ -1,3 +1,21 @@
+## Aula Viva — plataforma de cursos
+
+Plataforma Laravel 12 + Livewire 3 para vender cursos en video con precios en bolivianos (Bs). El checkout agrupa varios cursos en una sola orden y genera un único QR.
+
+### Instalación
+Requiere PHP 8.2+, Composer, Node.js 20+ y SQLite o MySQL/MariaDB. Copia `.env.example` a `.env`, ejecuta `composer install`, `php artisan key:generate`, `php artisan migrate --seed`, `npm ci && npm run build` y `php artisan serve`.
+
+SQLite es la opción de desarrollo por defecto. Para MySQL configura `DB_CONNECTION=mysql`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD`.
+
+### Pagos
+`PAYMENT_GATEWAY=fake` muestra un QR SVG local y permite simular pago confirmado. Para Libélula usa `PAYMENT_GATEWAY=libelula`, `LIBELULA_ENDPOINT` y `LIBELULA_TOKEN`. El contrato exacto de endpoints/campos queda marcado como TODO en `app/Services/LibelulaGateway.php` porque no se proporcionaron credenciales ni documentación verificable.
+
+### Usuarios demo
+- Administrador: `admin@aulaviva.test` / `password`
+- Cliente: `cliente@aulaviva.test` / `password`
+
+El webhook `POST /pagos/webhook/{gateway}` es idempotente y crea inscripciones dentro de una transacción.
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

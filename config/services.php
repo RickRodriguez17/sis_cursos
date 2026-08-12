@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'payment_gateway' => env('PAYMENT_GATEWAY', 'fake'),
+    'libelula' => [
+        'endpoint' => env('LIBELULA_ENDPOINT'),
+        'token' => env('LIBELULA_TOKEN'),
+    ],
 
     /*
     |--------------------------------------------------------------------------
