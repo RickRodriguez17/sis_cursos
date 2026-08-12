@@ -1,0 +1,17 @@
+@extends('layout')
+
+@section('content')
+    <div class="mx-auto max-w-md rounded-2xl bg-white p-8 shadow">
+        <h1 class="text-3xl font-black">Ingresar</h1>
+        <form class="mt-6 space-y-4" method="post">
+            @csrf
+            <input class="w-full rounded border p-3" name="email" type="email" placeholder="Correo" required>
+            <input class="w-full rounded border p-3" name="password" type="password" placeholder="Contraseña" required>
+            <button class="w-full rounded bg-indigo-700 p-3 font-bold text-white">Ingresar</button>
+        </form>
+        <p class="mt-5 text-sm">
+            ¿No tienes cuenta?
+            <a class="text-indigo-700" href="{{ route('register') }}">Regístrate</a>
+        </p>
+    </div>
+@endsection
