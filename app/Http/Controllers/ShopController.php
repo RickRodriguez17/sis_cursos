@@ -22,9 +22,6 @@ class ShopController extends Controller
     public function add(Course $course)
     {
         $ids = session('cart', []);
-        if (! auth()->check()) {
-            return back()->with('error', 'Debes iniciar sesión para agregar un curso.');
-        }
 
         if (Enrollment::where('user_id', auth()->id())->where('course_id', $course->id)->exists()) {
             return back()->with('info', 'Ya estás inscrito en este curso.');
@@ -34,10 +31,8 @@ class ShopController extends Controller
             return back()->with('info', 'Este curso ya está en tu carrito.');
         }
 
-        if (auth()->check()) {
-            $ids[] = $course->id;
-            session(['cart' => $ids]);
-        }
+        $ids[] = $course->id;
+        session(['cart' => $ids]);
 
         return back()->with('ok', 'Curso agregado al carrito.');
     }
