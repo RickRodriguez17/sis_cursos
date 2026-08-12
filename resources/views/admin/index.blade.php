@@ -1,1 +1,13 @@
-@extends('layout') @section('content')<h1 class="text-4xl font-black">Administración</h1><p class="mt-2 text-slate-500">Vista de control de cursos y órdenes.</p><h2 class="mt-10 text-2xl font-bold">Cursos ({{ $courses->count() }})</h2><div class="mt-4 overflow-hidden rounded-xl bg-white shadow"><table class="w-full text-left"><tr class="border-b"><th class="p-4">Curso</th><th class="p-4">Videos</th><th class="p-4">Publicado</th></tr>@foreach($courses as $course)<tr class="border-b"><td class="p-4">{{ $course->title }}</td><td class="p-4">{{ $course->lessons_count }}</td><td class="p-4">{{ $course->is_published?'Sí':'No' }}</td></tr>@endforeach</table></div><h2 class="mt-10 text-2xl font-bold">Últimas órdenes</h2><div class="mt-4 space-y-2">@foreach($orders as $order)<div class="rounded bg-white p-4 shadow-sm">#{{ $order->id }} · {{ $order->user->email }} · Bs {{ $order->total }} · {{ $order->status }}</div>@endforeach</div>@endsection
+@extends('layout')
+
+@section('content')
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-4xl font-black">Administración</h1>
+            <p class="mt-2 text-slate-500">Gestiona cursos, videos y órdenes.</p>
+        </div>
+        <a class="rounded-lg bg-indigo-700 px-5 py-3 font-semibold text-white" href="{{ route('admin.courses.index') }}">
+            Gestionar cursos
+        </a>
+    </div>
+@endsection

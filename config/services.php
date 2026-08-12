@@ -2,6 +2,7 @@
 
 return [
     'payment_gateway' => env('PAYMENT_GATEWAY', 'fake'),
+    'payment_webhook_secret' => env('LIBELULA_WEBHOOK_SECRET'),
     'libelula' => [
         'endpoint' => env('LIBELULA_ENDPOINT'),
         'token' => env('LIBELULA_TOKEN'),

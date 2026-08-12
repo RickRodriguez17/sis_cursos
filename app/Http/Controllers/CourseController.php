@@ -29,9 +29,9 @@ class CourseController extends Controller
         if ($lesson->video_type === 'file') {
             abort_unless($lesson->video_path, 404);
 
-            return Storage::disk('public')->response($lesson->video_path);
+            return Storage::disk('local')->response($lesson->video_path);
         }
 
-return redirect($lesson->video_url);
+        return redirect($lesson->video_url);
     }
 }

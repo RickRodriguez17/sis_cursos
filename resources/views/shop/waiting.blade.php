@@ -1,1 +1,39 @@
-@extends('layout') @section('content')<div class="mx-auto max-w-lg text-center"><h1 class="text-4xl font-black">Esperando tu pago</h1><p class="mt-3 text-slate-600">Escanea el QR para pagar <strong>Bs {{ number_format($order->total,2,',','.') }}</strong>.</p><div class="mx-auto mt-8 rounded-2xl bg-white p-6 shadow"><img class="mx-auto h-64 w-64" src="{{ $order->payment->qr_url }}" alt="QR de pago"><p class="mt-4 text-sm text-slate-500">Referencia: {{ $order->external_reference }}</p>@if(config('services.payment_gateway')==='fake')<form class="mt-5" method="post" action="{{ route('orders.fake',$order) }}">@csrf<button class="rounded bg-emerald-600 px-5 py-3 font-semibold text-white">Simular pago confirmado</button></form>@endif</div><p class="mt-6 text-sm text-slate-500">Consultando estado automáticamente…</p><script>setInterval(()=>fetch('{{ route('orders.status',$order) }}').then(r=>r.json()).then(d=>{if(d.status==='paid')location.href='{{ route('my.courses') }}'}),5000)</script></div>@endsection
+@extends('layout')
+
+@section('content')
+    <div class="mx-auto max-w-lg text-center">
+        <h1 class="text-4xl font-black">Esperando tu pago</h1>
+        <p class="mt-3 text-slate-600">
+            Escanea el QR para pagar <strong>Bs {{ number_format($order->total, 2, ',', '.') }}</strong>.
+        </p>
+
+        <div class="mx-auto mt-8 rounded-2xl bg-white p-6 shadow">
+            <img
+                class="mx-auto h-64 w-64"
+                src="{{ $order->payment->qr_url ?: route('orders.qr', $order) }}"
+                alt="QR de pago"
+            >
+            <p class="mt-4 text-sm text-slate-500">Referencia: {{ $order->external_reference }}</p>
+
+            @if (config('services.payment_gateway') === 'fake')
+                <form class="mt-5" method="post" action="{{ route('orders.fake', $order) }}">
+                    @csrf
+                    <button class="rounded bg-emerald-600 px-5 py-3 font-semibold text-white">
+                        Simular pago confirmado
+                    </button>
+                </form>
+            @endif
+        </div>
+
+        <p class="mt-6 text-sm text-slate-500">Consultando estado automáticamente…</p>
+        <script>
+            setInterval(() => fetch('{{ route('orders.status', $order) }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'paid') {
+                        location.href = '{{ route('my.courses') }}';
+                    }
+                }), 5000);
+        </script>
+    </div>
+@endsection

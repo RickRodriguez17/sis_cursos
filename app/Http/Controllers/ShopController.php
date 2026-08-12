@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Order;
+use App\Services\OrderPaymentService;
 use App\Services\PaymentManager;
 use Illuminate\Support\Facades\DB;
 
@@ -21,12 +22,24 @@ class ShopController extends Controller
     public function add(Course $course)
     {
         $ids = session('cart', []);
-        if (auth()->check() && ! Enrollment::where('user_id', auth()->id())->where('course_id', $course->id)->exists() && ! in_array($course->id, $ids)) {
+        if (! auth()->check()) {
+            return back()->with('error', 'Debes iniciar sesión para agregar un curso.');
+        }
+
+        if (Enrollment::where('user_id', auth()->id())->where('course_id', $course->id)->exists()) {
+            return back()->with('info', 'Ya estás inscrito en este curso.');
+        }
+
+        if (in_array($course->id, $ids)) {
+            return back()->with('info', 'Este curso ya está en tu carrito.');
+        }
+
+        if (auth()->check()) {
             $ids[] = $course->id;
             session(['cart' => $ids]);
         }
 
-return back()->with('ok', 'Curso agregado al carrito.');
+        return back()->with('ok', 'Curso agregado al carrito.');
     }
 
     public function remove(Course $course)
@@ -45,9 +58,17 @@ return back()->with('ok', 'Curso agregado al carrito.');
             $order = Order::create(['user_id' => auth()->id(), 'total' => $courses->sum('price')]);
             foreach ($courses as $course) {
                 $order->items()->create(['course_id' => $course->id, 'price' => $course->price]);
-            }$charge = $payments->charge($order);
+            }
+
+            $charge = $payments->charge($order);
             $order->update(['external_reference' => $charge['external_id']]);
-            $order->payment()->create(['gateway' => config('services.payment_gateway'), 'external_id' => $charge['external_id'], 'amount' => $order->total, 'payload' => $charge['payload'], 'qr_url' => $charge['qr_url']]);
+            $order->payment()->create([
+                'gateway' => config('services.payment_gateway'),
+                'external_id' => $charge['external_id'],
+                'amount' => $order->total,
+                'payload' => $charge['payload'],
+                'qr_url' => $charge['qr_url'],
+            ]);
 
             return $order;
         });
@@ -71,10 +92,10 @@ return back()->with('ok', 'Curso agregado al carrito.');
         return response()->json(['status' => $order->fresh()->status]);
     }
 
-    public function fakeConfirm(Order $order)
+    public function fakeConfirm(Order $order, OrderPaymentService $paymentService)
     {
         abort_unless(config('services.payment_gateway') === 'fake' && $order->user_id === auth()->id(), 403);
-        app(WebhookController::class)->confirm($order);
+        $paymentService->confirm($order);
 
         return redirect('/mis-cursos')->with('ok', 'Pago confirmado.');
     }
@@ -86,6 +107,6 @@ return back()->with('ok', 'Curso agregado al carrito.');
 
     public function myOrders()
     {
-        return view('account.orders', ['orders' => auth()->user()->orders()->with('payment','items.course')->latest()->get()]);
+        return view('account.orders', ['orders' => auth()->user()->orders()->with('payment', 'items.course')->latest()->get()]);
     }
 }

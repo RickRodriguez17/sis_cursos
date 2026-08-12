@@ -22,7 +22,7 @@ class AuthController extends Controller
             return redirect()->intended('/cursos');
         }
 
-return back()->withErrors(['email' => 'Las credenciales no son válidas.']);
+        return back()->withErrors(['email' => 'Las credenciales no son válidas.']);
     }
 
     public function showRegister()

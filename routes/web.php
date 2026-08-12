@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\WebhookController;
 use App\Models\Course;
-use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
@@ -25,10 +25,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [ShopController::class, 'checkout'])->name('checkout');
     Route::get('/ordenes/{order}/esperando', [ShopController::class, 'waiting'])->name('orders.waiting');
     Route::get('/ordenes/{order}/estado', [ShopController::class, 'status'])->name('orders.status');
+    Route::get('/ordenes/{order}/qr', [PaymentController::class, 'qr'])->name('orders.qr');
     Route::post('/ordenes/{order}/simular-pago', [ShopController::class, 'fakeConfirm'])->name('orders.fake');
     Route::get('/mis-cursos', [ShopController::class, 'myCourses'])->name('my.courses');
     Route::get('/mis-ordenes', [ShopController::class, 'myOrders'])->name('my.orders');
 });
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/', fn () => view('admin.index', ['courses' => Course::withCount('lessons')->latest()->get(), 'orders' => Order::with('user')->latest()->limit(20)->get()]))->name('admin.index');
+    Route::get('/', fn () => view('admin.index'))->name('admin.index');
+    Route::get('/cursos', fn () => view('admin.courses'))->name('admin.courses.index');
+    Route::get('/cursos/crear', fn () => view('admin.course-editor'))->name('admin.courses.create');
+    Route::get('/cursos/{course}/editar', fn (Course $course) => view('admin.course-editor', compact('course')))->name('admin.courses.edit');
 });

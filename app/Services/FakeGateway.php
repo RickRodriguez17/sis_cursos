@@ -15,7 +15,7 @@ class FakeGateway implements PaymentGateway
         $payload = "SIS-CURSOS|orden={$order->id}|monto={$order->total}|ref={$id}";
         $svg = (new QRCode(new QROptions(['outputType' => QRCode::OUTPUT_MARKUP_SVG])))->render($payload);
 
-        return ['external_id' => $id, 'qr_url' => 'data:image/svg+xml;base64,'.base64_encode($svg), 'payload' => ['simulated' => true, 'text' => $payload]];
+        return ['external_id' => $id, 'qr_url' => null, 'payload' => ['simulated' => true, 'qr_payload' => $payload]];
     }
 
     public function verify(string $externalId): array

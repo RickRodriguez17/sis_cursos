@@ -1,1 +1,25 @@
-@extends('layout') @section('content')<h1 class="text-4xl font-black">Todos los cursos</h1><p class="mt-2 text-slate-500">Elige una ruta de aprendizaje y comienza hoy.</p><div class="mt-8 grid gap-6 md:grid-cols-3">@foreach($courses as $course)<article class="overflow-hidden rounded-2xl bg-white shadow"><div class="h-36 bg-gradient-to-br from-indigo-500 to-purple-600"></div><div class="p-5"><h2 class="text-xl font-bold">{{ $course->title }}</h2><p class="mt-2 text-sm text-slate-600">{{ $course->short_description }}</p><p class="mt-4 text-sm text-slate-500">{{ $course->lessons_count }} videos</p><div class="mt-4 flex items-center justify-between"><strong>Bs {{ number_format($course->price,2,',','.') }}</strong><a class="text-indigo-700 font-semibold" href="{{ route('courses.show',$course) }}">Ver curso →</a></div></div></article>@endforeach</div>@endsection
+@extends('layout')
+
+@section('content')
+    <h1 class="text-4xl font-black">Todos los cursos</h1>
+    <p class="mt-2 text-slate-500">Elige una ruta de aprendizaje y comienza hoy.</p>
+
+    <div class="mt-8 grid gap-6 md:grid-cols-3">
+        @foreach ($courses as $course)
+            <article class="overflow-hidden rounded-2xl bg-white shadow">
+                <div class="h-36 bg-gradient-to-br from-indigo-500 to-purple-600"></div>
+                <div class="p-5">
+                    <h2 class="text-xl font-bold">{{ $course->title }}</h2>
+                    <p class="mt-2 text-sm text-slate-600">{{ $course->short_description }}</p>
+                    <p class="mt-4 text-sm text-slate-500">{{ $course->lessons_count }} videos</p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <strong>Bs {{ number_format($course->price, 2, ',', '.') }}</strong>
+                        <a class="font-semibold text-indigo-700" href="{{ route('courses.show', $course) }}">
+                            Ver curso →
+                        </a>
+                    </div>
+                </div>
+            </article>
+        @endforeach
+    </div>
+@endsection

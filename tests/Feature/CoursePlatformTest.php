@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Admin\CourseEditor;
 use App\Models\Course;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class CoursePlatformTest extends TestCase
@@ -39,7 +42,68 @@ class CoursePlatformTest extends TestCase
         $order->payment()->create(['gateway' => 'fake', 'external_id' => 'REF', 'amount' => 50]);
         foreach ([1, 2] as $_) {
             $this->post('/pagos/webhook/fake', ['external_id' => 'REF', 'status' => 'paid'])->assertOk();
-        }$this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'paid']);
+        }
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'paid']);
         $this->assertDatabaseCount('enrollments', 1);
+    }
+
+    public function test_non_admin_cannot_access_admin_crud(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('admin.courses.index'))
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_create_course_and_lesson(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        Livewire::actingAs($admin)
+            ->test(CourseEditor::class)
+            ->set('title', 'Curso nuevo')
+            ->set('slug', 'curso-nuevo')
+            ->set('shortDescription', 'Descripción corta')
+            ->set('description', 'Descripción completa')
+            ->set('price', '120')
+            ->call('saveCourse')
+            ->set('lessonTitle', 'Primera lección')
+            ->set('videoType', 'youtube')
+            ->set('videoUrl', 'https://youtube.com/watch?v=demo')
+            ->call('saveLesson');
+
+        $this->assertDatabaseHas('courses', ['slug' => 'curso-nuevo']);
+        $this->assertDatabaseHas('lessons', ['title' => 'Primera lección', 'video_type' => 'youtube']);
+    }
+
+    public function test_webhook_rejects_invalid_secret(): void
+    {
+        config(['services.payment_webhook_secret' => 'correcto']);
+
+        $this->postJson('/pagos/webhook/fake', ['external_id' => 'missing', 'status' => 'paid'])
+            ->assertUnauthorized();
+    }
+
+    public function test_private_video_cannot_be_accessed_without_enrollment(): void
+    {
+        Storage::disk('local')->put('course-videos/private.mp4', 'video');
+        $user = User::factory()->create();
+        $course = Course::create([
+            'title' => 'Curso privado',
+            'slug' => 'curso-privado',
+            'short_description' => 'Corto',
+            'description' => 'Largo',
+            'price' => 50,
+            'is_published' => true,
+        ]);
+        $lesson = $course->lessons()->create([
+            'title' => 'Video privado',
+            'video_type' => 'file',
+            'video_path' => 'course-videos/private.mp4',
+            'is_preview' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('lessons.video', [$course, $lesson]))
+            ->assertForbidden();
     }
 }
