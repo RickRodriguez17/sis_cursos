@@ -18,7 +18,10 @@ class PaymentController extends Controller
         $payload = data_get($payment->payload, 'qr_payload');
         abort_unless($payload, 404);
 
-        $svg = (new QRCode(new QROptions(['outputType' => QRCode::OUTPUT_MARKUP_SVG])))->render($payload);
+        $svg = (new QRCode(new QROptions([
+            'outputType' => QRCode::OUTPUT_MARKUP_SVG,
+            'imageBase64' => false,
+        ])))->render($payload);
 
         return response($svg)->header('Content-Type', 'image/svg+xml');
     }

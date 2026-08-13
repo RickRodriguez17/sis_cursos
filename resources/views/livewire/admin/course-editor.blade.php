@@ -23,7 +23,7 @@
             <div class="mt-5 space-y-2">
                 @foreach ($lessons as $lesson)
                     <div class="flex items-center justify-between rounded border p-3">
-                        <span>{{ $lesson->sort_order + 1 }}. {{ $lesson->title }} @if ($lesson->is_preview)<small class="text-emerald-700">(preview)</small>@endif</span>
+                        <span>{{ $loop->iteration }}. {{ $lesson->title }} @if ($lesson->is_preview)<small class="text-emerald-700">(preview)</small>@endif</span>
                         <div class="flex gap-3 text-sm">
                             <button wire:click="moveLesson({{ $lesson->id }}, 'up')">↑</button>
                             <button wire:click="moveLesson({{ $lesson->id }}, 'down')">↓</button>
