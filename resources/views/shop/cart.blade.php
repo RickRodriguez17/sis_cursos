@@ -39,7 +39,13 @@
             </div>
             <aside class="erp-card h-fit p-6 lg:sticky lg:top-28">
                 <h2 class="text-lg font-bold">Resumen de compra</h2>
-                <div class="mt-5 flex justify-between border-b border-slate-100 pb-4 text-sm text-slate-500"><span>{{ $courses->count() }} cursos</span><span>Pago único</span></div>
+                <div class="mt-5 flex justify-between border-b border-slate-100 pb-4 text-sm text-slate-500">
+                    <span>
+                        {{ $courses->count() }}
+                        {{ $courses->count() === 1 ? 'curso' : 'cursos' }}
+                    </span>
+                    <span>Pago único</span>
+                </div>
                 <div class="mt-5 flex items-center justify-between"><span class="font-semibold">Total</span><strong class="text-2xl text-indigo-700">Bs {{ number_format($courses->sum('price'), 2, ',', '.') }}</strong></div>
                 <form class="mt-6" method="post" action="{{ route('checkout') }}">
                     @csrf

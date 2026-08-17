@@ -74,6 +74,34 @@ class CoursePlatformTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_admin_can_access_orders_and_enrollments_pages(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.orders'))
+            ->assertOk()
+            ->assertViewIs('admin.orders');
+
+        $this->actingAs($admin)
+            ->get(route('admin.enrollments'))
+            ->assertOk()
+            ->assertViewIs('admin.enrollments');
+    }
+
+    public function test_non_admin_cannot_access_orders_or_enrollments_pages(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.orders'))
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->get(route('admin.enrollments'))
+            ->assertForbidden();
+    }
+
     public function test_admin_can_create_course_and_lesson(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);

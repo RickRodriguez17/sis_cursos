@@ -4,9 +4,19 @@ namespace App\Livewire\Admin;
 
 use App\Models\Course;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class CourseManager extends Component
 {
+    use WithPagination;
+
+    public string $search = '';
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
     public function delete(int $courseId): void
     {
         Course::findOrFail($courseId)->delete();
@@ -23,7 +33,15 @@ class CourseManager extends Component
     public function render()
     {
         return view('livewire.admin.course-manager', [
-            'courses' => Course::withCount('lessons')->latest()->get(),
+            'courses' => Course::withCount('lessons')
+                ->when($this->search, function ($query) {
+                    $query->where(function ($query) {
+                        $query->where('title', 'like', '%'.$this->search.'%')
+                            ->orWhere('slug', 'like', '%'.$this->search.'%');
+                    });
+                })
+                ->latest()
+                ->paginate(15),
         ]);
     }
 }

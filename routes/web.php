@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\PaymentController;
@@ -31,7 +32,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/mis-ordenes', [ShopController::class, 'myOrders'])->name('my.orders');
 });
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/', fn () => view('admin.index'))->name('admin.index');
+    Route::get('/', [AdminController::class, 'dashboard'])->name('admin.index');
+    Route::get('/ordenes', [AdminController::class, 'orders'])->name('admin.orders');
+    Route::get('/inscripciones', [AdminController::class, 'enrollments'])->name('admin.enrollments');
     Route::get('/cursos', fn () => view('admin.courses'))->name('admin.courses.index');
     Route::get('/cursos/crear', fn () => view('admin.course-editor'))->name('admin.courses.create');
     Route::get('/cursos/{course}/editar', fn (Course $course) => view('admin.course-editor', compact('course')))->name('admin.courses.edit');
