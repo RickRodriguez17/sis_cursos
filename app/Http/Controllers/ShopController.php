@@ -24,24 +24,24 @@ class ShopController extends Controller
         $ids = session('cart', []);
 
         if (Enrollment::where('user_id', auth()->id())->where('course_id', $course->id)->exists()) {
-            return back()->with('info', 'Ya estás inscrito en este curso.');
+            return back()->with('status', 'Ya estás inscrito en este curso.');
         }
 
         if (in_array($course->id, $ids)) {
-            return back()->with('info', 'Este curso ya está en tu carrito.');
+            return back()->with('status', 'Este curso ya está en tu carrito.');
         }
 
         $ids[] = $course->id;
         session(['cart' => $ids]);
 
-        return back()->with('ok', 'Curso agregado al carrito.');
+        return back()->with('success', 'Curso agregado al carrito.');
     }
 
     public function remove(Course $course)
     {
         session(['cart' => array_values(array_diff(session('cart', []), [$course->id]))]);
 
-        return back();
+        return back()->with('success', 'Curso quitado del carrito.');
     }
 
     public function checkout(PaymentManager $payments)
@@ -92,7 +92,7 @@ class ShopController extends Controller
         abort_unless(config('services.payment_gateway') === 'fake' && $order->user_id === auth()->id(), 403);
         $paymentService->confirm($order);
 
-        return redirect('/mis-cursos')->with('ok', 'Pago confirmado.');
+        return redirect('/mis-cursos')->with('success', 'Pago confirmado.');
     }
 
     public function myCourses()
