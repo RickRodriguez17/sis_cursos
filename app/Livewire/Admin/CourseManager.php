@@ -10,13 +10,14 @@ class CourseManager extends Component
     public function delete(int $courseId): void
     {
         Course::findOrFail($courseId)->delete();
-        session()->flash('ok', 'Curso eliminado.');
+        $this->dispatch('toast', message: 'Curso eliminado.', type: 'success');
     }
 
     public function toggle(int $courseId): void
     {
         $course = Course::findOrFail($courseId);
         $course->update(['is_published' => ! $course->is_published]);
+        $this->dispatch('toast', message: $course->is_published ? 'Curso publicado.' : 'Curso despublicado.', type: 'success');
     }
 
     public function render()

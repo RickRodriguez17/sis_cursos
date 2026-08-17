@@ -1,22 +1,22 @@
 @extends('layout')
 
 @section('content')
-    <h1 class="text-4xl font-black">Mis órdenes</h1>
-    <div class="mt-8 space-y-4">
+    <p class="text-sm font-semibold uppercase tracking-wider text-indigo-600">Historial</p>
+    <h1 class="mt-2 text-3xl font-black tracking-tight">Mis órdenes</h1>
+    <p class="mt-2 text-slate-500">Consulta tus compras y estados de pago.</p>
+    <div class="erp-card mt-8 overflow-hidden">
+        <div class="hidden grid-cols-[1fr_1fr_1fr_auto] gap-4 border-b border-slate-100 bg-slate-50 px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 sm:grid"><span>Orden</span><span>Fecha</span><span>Estado</span><span>Total</span></div>
+        <div class="divide-y divide-slate-100">
         @forelse ($orders as $order)
-            <div class="rounded-xl bg-white p-5 shadow">
-                <div class="flex justify-between">
-                    <strong>Orden #{{ $order->id }}</strong>
-                    <span class="font-semibold">
-                        {{ ['pending' => 'Pendiente', 'paid' => 'Pagada', 'expired' => 'Expirada', 'cancelled' => 'Anulada'][$order->status] }}
-                    </span>
-                </div>
-                <p class="mt-2">
-                    Bs {{ number_format($order->total, 2, ',', '.') }} · {{ $order->created_at->format('d/m/Y H:i') }}
-                </p>
+            <div class="grid gap-2 px-6 py-5 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-center sm:gap-4">
+                <div><strong class="block">Orden #{{ $order->id }}</strong><span class="text-xs text-slate-500">{{ $order->items->count() }} curso(s)</span></div>
+                <span class="text-sm text-slate-500">{{ $order->created_at->format('d/m/Y H:i') }}</span>
+                <span class="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold {{ $order->status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}"><i class="bi {{ $order->status === 'paid' ? 'bi-check-circle' : 'bi-clock' }}"></i>{{ ['pending' => 'Pendiente', 'paid' => 'Pagada', 'expired' => 'Expirada', 'cancelled' => 'Anulada'][$order->status] }}</span>
+                <strong class="text-lg">Bs {{ number_format($order->total, 2, ',', '.') }}</strong>
             </div>
         @empty
-            <p>No tienes órdenes.</p>
+            <div class="p-10 text-center text-slate-500">No tienes órdenes todavía.</div>
         @endforelse
+        </div>
     </div>
 @endsection

@@ -87,7 +87,7 @@ class CourseEditor extends Component
 
         $course->save();
         $this->course = $course;
-        session()->flash('ok', 'Curso guardado.');
+        $this->dispatch('toast', message: 'Curso guardado correctamente.', type: 'success');
     }
 
     public function editLesson(int $lessonId): void
@@ -135,13 +135,13 @@ class CourseEditor extends Component
 
         $lesson->save();
         $this->resetLessonForm();
-        session()->flash('ok', 'Video guardado.');
+        $this->dispatch('toast', message: 'Video guardado correctamente.', type: 'success');
     }
 
     public function deleteLesson(int $lessonId): void
     {
         $this->course?->lessons()->findOrFail($lessonId)->delete();
-        session()->flash('ok', 'Video eliminado.');
+        $this->dispatch('toast', message: 'Video eliminado.', type: 'success');
     }
 
     public function moveLesson(int $lessonId, string $direction): void

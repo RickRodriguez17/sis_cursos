@@ -16,7 +16,7 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/registro', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/registro', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::post('/pagos/webhook/{gateway}', [WebhookController::class, 'handle']);
 Route::middleware('auth')->group(function () {
     Route::get('/carrito', [ShopController::class, 'cart'])->name('cart');
