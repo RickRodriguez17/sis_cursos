@@ -218,4 +218,36 @@ class CoursePlatformTest extends TestCase
             ->get(route('lessons.video', [$course, $lesson]))
             ->assertForbidden();
     }
+
+    public function test_admin_can_review_video_from_unpublished_course(): void
+    {
+        Storage::disk('local')->put('course-videos/admin-review.mp4', 'video');
+        $admin = User::factory()->create(['is_admin' => true]);
+        $course = Course::create([
+            'title' => 'Curso sin publicar',
+            'slug' => 'curso-sin-publicar',
+            'short_description' => 'Corto',
+            'description' => 'Largo',
+            'price' => 50,
+            'is_published' => false,
+        ]);
+        $lesson = $course->lessons()->create([
+            'title' => 'Video para revisar',
+            'video_path' => 'course-videos/admin-review.mp4',
+            'is_preview' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('lessons.video', [$course, $lesson]))
+            ->assertOk()
+            ->assertViewIs('courses.lesson');
+
+        $this->actingAs($admin)
+            ->get(route('lessons.stream', [$course, $lesson]))
+            ->assertOk();
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('lessons.stream', [$course, $lesson]))
+            ->assertForbidden();
+    }
 }

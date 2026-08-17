@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
                     'sort_order' => $i,
                 ], [
                     'title' => $lesson,
-                    'description' => 'Lección práctica pendiente de cargar.',
+                    'description' => 'Contenido práctico del curso.',
                     'video_path' => null,
                     'is_preview' => $i === 0,
                 ]);

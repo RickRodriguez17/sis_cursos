@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <main>
+        <div>
             <div class="erp-card overflow-hidden">
                 <div class="aspect-video bg-slate-950">
                     <video
@@ -30,7 +30,7 @@
                     </p>
                 </div>
             </div>
-        </main>
+        </div>
 
         <aside class="erp-card h-fit p-5 lg:sticky lg:top-28">
             <p class="text-xs font-bold uppercase tracking-wider text-slate-500">

@@ -176,6 +176,16 @@
                             >
                                 <i class="bi bi-trash3"></i>
                             </button>
+                            @if ($lesson->video_path)
+                                <a
+                                    class="rounded-lg p-2 text-emerald-600 hover:bg-emerald-50"
+                                    href="{{ route('lessons.video', [$course, $lesson]) }}"
+                                    target="_blank"
+                                    title="Ver video"
+                                >
+                                    <i class="bi bi-play-circle"></i>
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endforeach

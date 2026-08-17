@@ -91,9 +91,11 @@ class CourseController extends Controller
     private function authorizeLesson(Course $course, Lesson $lesson): void
     {
         abort_unless($lesson->course_id === $course->id, 404);
-        abort_unless($course->is_published, 404);
+        $isAdmin = auth()->user()?->is_admin === true;
+        abort_unless($course->is_published || $isAdmin, 403);
 
-        $allowed = $lesson->is_preview
+        $allowed = $isAdmin
+            || $lesson->is_preview
             || (auth()->check() && $course->users()->whereKey(auth()->id())->exists());
 
         abort_unless($allowed, 403);
