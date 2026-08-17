@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -19,7 +20,7 @@ class CoursePlatformTest extends TestCase
     {
         $user = User::factory()->create();
         $course = Course::create(['title' => 'Curso', 'slug' => 'curso', 'short_description' => 'Corto', 'description' => 'Largo', 'price' => 50, 'is_published' => true]);
-        $lesson = $course->lessons()->create(['title' => 'Privada', 'video_type' => 'youtube', 'video_url' => 'https://youtube.com', 'is_preview' => false]);
+        $lesson = $course->lessons()->create(['title' => 'Privada', 'is_preview' => false]);
         $this->actingAs($user)->get(route('lessons.video', [$course, $lesson]))->assertForbidden();
     }
 
@@ -115,12 +116,76 @@ class CoursePlatformTest extends TestCase
             ->set('price', '120')
             ->call('saveCourse')
             ->set('lessonTitle', 'Primera lección')
-            ->set('videoType', 'youtube')
-            ->set('videoUrl', 'https://youtube.com/watch?v=demo')
+            ->set('videoFile', UploadedFile::fake()->create('primera.mp4', 10, 'video/mp4'))
             ->call('saveLesson');
 
         $this->assertDatabaseHas('courses', ['slug' => 'curso-nuevo']);
-        $this->assertDatabaseHas('lessons', ['title' => 'Primera lección', 'video_type' => 'youtube']);
+        $this->assertDatabaseHas('lessons', ['title' => 'Primera lección']);
+    }
+
+    public function test_lesson_creation_requires_a_video_file(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        Livewire::actingAs($admin)
+            ->test(CourseEditor::class)
+            ->set('title', 'Curso nuevo')
+            ->set('slug', 'curso-nuevo')
+            ->set('shortDescription', 'Descripción corta')
+            ->set('description', 'Descripción completa')
+            ->set('price', '120')
+            ->call('saveCourse')
+            ->set('lessonTitle', 'Primera lección')
+            ->call('saveLesson')
+            ->assertHasErrors(['videoFile' => 'required']);
+    }
+
+    public function test_video_stream_supports_byte_ranges(): void
+    {
+        Storage::disk('local')->put('course-videos/range.mp4', '0123456789');
+        $course = Course::create([
+            'title' => 'Curso',
+            'slug' => 'curso-rango',
+            'short_description' => 'Corto',
+            'description' => 'Largo',
+            'price' => 50,
+            'is_published' => true,
+        ]);
+        $lesson = $course->lessons()->create([
+            'title' => 'Video',
+            'video_path' => 'course-videos/range.mp4',
+            'is_preview' => true,
+        ]);
+
+        $response = $this->get(
+            route('lessons.stream', [$course, $lesson]),
+            ['Range' => 'bytes=2-5'],
+        );
+
+        $response->assertStatus(206)
+            ->assertHeader('Accept-Ranges', 'bytes')
+            ->assertHeader('Content-Range', 'bytes 2-5/10')
+            ->assertHeader('Content-Length', '4');
+        $this->assertSame('2345', $response->streamedContent());
+    }
+
+    public function test_lesson_without_video_returns_not_found(): void
+    {
+        $course = Course::create([
+            'title' => 'Curso pendiente',
+            'slug' => 'curso-pendiente',
+            'short_description' => 'Corto',
+            'description' => 'Largo',
+            'price' => 50,
+            'is_published' => true,
+        ]);
+        $lesson = $course->lessons()->create([
+            'title' => 'Pendiente',
+            'is_preview' => true,
+        ]);
+
+        $this->get(route('lessons.video', [$course, $lesson]))->assertNotFound();
+        $this->get(route('lessons.stream', [$course, $lesson]))->assertNotFound();
     }
 
     public function test_webhook_rejects_invalid_secret(): void
@@ -145,7 +210,6 @@ class CoursePlatformTest extends TestCase
         ]);
         $lesson = $course->lessons()->create([
             'title' => 'Video privado',
-            'video_type' => 'file',
             'video_path' => 'course-videos/private.mp4',
             'is_preview' => false,
         ]);

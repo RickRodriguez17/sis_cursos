@@ -41,11 +41,16 @@
                             <span
                                 @class([
                                     'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-                                    'bg-emerald-100 text-emerald-700' => $enrolled || $lesson->is_preview,
+                                    'bg-emerald-100 text-emerald-700' => $lesson->video_path && ($enrolled || $lesson->is_preview),
+                                    'bg-amber-100 text-amber-700' => ! $lesson->video_path,
                                     'bg-slate-100 text-slate-400' => ! $enrolled && ! $lesson->is_preview,
                                 ])
                             >
-                                <i class="bi {{ $enrolled || $lesson->is_preview ? 'bi-play-fill' : 'bi-lock-fill' }}"></i>
+                                <i class="bi {{
+                                    ! $lesson->video_path
+                                        ? 'bi-clock-fill'
+                                        : (($enrolled || $lesson->is_preview) ? 'bi-play-fill' : 'bi-lock-fill')
+                                }}"></i>
                             </span>
                             <div class="min-w-0 flex-1">
                                 <strong class="block truncate">
@@ -55,13 +60,17 @@
                                     {{ $lesson->description ?: 'Lección en video' }}
                                 </p>
                             </div>
-                            @if ($enrolled || $lesson->is_preview)
+                            @if (($enrolled || $lesson->is_preview) && $lesson->video_path)
                                 <a
                                     class="shrink-0 text-sm font-bold text-indigo-600 hover:text-indigo-800"
                                     href="{{ route('lessons.video', [$course, $lesson]) }}"
                                 >
                                     Ver <i class="bi bi-arrow-right"></i>
                                 </a>
+                            @elseif (! $lesson->video_path)
+                                <span class="shrink-0 text-xs font-semibold text-amber-600">
+                                    Video pendiente
+                                </span>
                             @else
                                 <span class="shrink-0 text-xs font-semibold text-slate-400">
                                     Bloqueado

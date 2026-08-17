@@ -22,7 +22,14 @@ class DatabaseSeeder extends Seeder
         foreach ($data as [$title,$slug,$short,$desc,$price,$lessons]) {
             $course = Course::updateOrCreate(['slug' => $slug], ['title' => $title, 'short_description' => $short, 'description' => $desc, 'price' => $price, 'is_published' => true]);
             foreach ($lessons as $i => $lesson) {
-                $course->lessons()->updateOrCreate(['sort_order' => $i], ['title' => $lesson, 'description' => 'Lección práctica en video.', 'video_type' => 'youtube', 'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'is_preview' => $i === 0]);
+                $course->lessons()->updateOrCreate([
+                    'sort_order' => $i,
+                ], [
+                    'title' => $lesson,
+                    'description' => 'Lección práctica pendiente de cargar.',
+                    'video_path' => null,
+                    'is_preview' => $i === 0,
+                ]);
             }
         }
     }

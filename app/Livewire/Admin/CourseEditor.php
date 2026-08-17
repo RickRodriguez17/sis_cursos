@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\Course;
 use App\Models\Lesson;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -33,10 +34,6 @@ class CourseEditor extends Component
     public string $lessonTitle = '';
 
     public string $lessonDescription = '';
-
-    public string $videoType = 'youtube';
-
-    public string $videoUrl = '';
 
     public $videoFile;
 
@@ -96,8 +93,6 @@ class CourseEditor extends Component
         $this->editingLessonId = $lesson->id;
         $this->lessonTitle = $lesson->title;
         $this->lessonDescription = (string) $lesson->description;
-        $this->videoType = $lesson->video_type;
-        $this->videoUrl = (string) $lesson->video_url;
         $this->duration = (string) $lesson->duration;
         $this->isPreview = $lesson->is_preview;
     }
@@ -106,25 +101,33 @@ class CourseEditor extends Component
     {
         abort_unless($this->course?->exists, 422);
 
-        $data = $this->validate([
+        $rules = [
             'lessonTitle' => ['required', 'string', 'max:255'],
             'lessonDescription' => ['nullable', 'string'],
-            'videoType' => ['required', Rule::in(['youtube', 'vimeo', 'file'])],
-            'videoUrl' => ['nullable', 'url', 'required_unless:videoType,file'],
-            'videoFile' => ['nullable', 'file', 'mimes:mp4,webm,mov', 'max:512000', 'required_if:videoType,file'],
+            'videoFile' => [
+                $this->editingLessonId ? 'nullable' : 'required',
+                'file',
+                'mimes:mp4,webm,mov',
+                'mimetypes:video/mp4,video/webm,video/quicktime',
+                'max:512000',
+            ],
             'duration' => ['nullable', 'integer', 'min:0'],
             'isPreview' => ['boolean'],
+        ];
+        $data = $this->validate($rules, [
+            'videoFile.required' => 'Debes subir un archivo de video para crear la lección.',
+            'videoFile.max' => 'El video no puede superar los 512 MB.',
+            'videoFile.mimetypes' => 'El archivo debe ser un video MP4, WebM o MOV válido.',
         ]);
 
         $lesson = $this->editingLessonId
             ? $this->course->lessons()->findOrFail($this->editingLessonId)
             : new Lesson(['course_id' => $this->course->id, 'sort_order' => $this->course->lessons()->max('sort_order') + 1]);
+        $previousPath = $lesson->video_path;
 
         $lesson->fill([
             'title' => $data['lessonTitle'],
             'description' => $data['lessonDescription'] ?? null,
-            'video_type' => $data['videoType'],
-            'video_url' => $data['videoType'] === 'file' ? null : ($data['videoUrl'] ?? null),
             'duration' => $data['duration'] ?? null,
             'is_preview' => $data['isPreview'],
         ]);
@@ -134,6 +137,9 @@ class CourseEditor extends Component
         }
 
         $lesson->save();
+        if ($this->videoFile && $previousPath && $previousPath !== $lesson->video_path) {
+            Storage::disk('local')->delete($previousPath);
+        }
         $this->resetLessonForm();
         $this->dispatch('toast', message: 'Video guardado correctamente.', type: 'success');
     }
@@ -161,8 +167,7 @@ class CourseEditor extends Component
 
     private function resetLessonForm(): void
     {
-        $this->reset(['editingLessonId', 'lessonTitle', 'lessonDescription', 'videoUrl', 'videoFile', 'duration', 'isPreview']);
-        $this->videoType = 'youtube';
+        $this->reset(['editingLessonId', 'lessonTitle', 'lessonDescription', 'videoFile', 'duration', 'isPreview']);
     }
 
     public function render()
