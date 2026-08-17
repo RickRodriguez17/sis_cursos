@@ -51,13 +51,13 @@
             </div>
         </div>
         @if (session('success') || session('ok'))
-            <script>window.erpToast(@js(session('success') ?? session('ok')), 'success');</script>
+            <script>window.addEventListener('load', () => window.erpToast(@js(session('success') ?? session('ok')), 'success'), { once: true });</script>
         @endif
         @if (session('error'))
-            <script>window.erpAlert({ icon: 'error', title: 'No fue posible completar la operación', text: @js(session('error')) });</script>
+            <script>window.addEventListener('load', () => window.erpAlert({ icon: 'error', title: 'No fue posible completar la operación', text: @js(session('error')) }), { once: true });</script>
         @endif
         @if (session('status') || session('info'))
-            <script>window.erpToast(@js(session('status') ?? session('info')), 'info');</script>
+            <script>window.addEventListener('load', () => window.erpToast(@js(session('status') ?? session('info')), 'info'), { once: true });</script>
         @endif
         @livewireScripts
     </body>

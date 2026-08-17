@@ -50,16 +50,16 @@
         </nav>
         <main class="mx-auto min-h-[calc(100vh-10rem)] max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             @if (session('success') || session('ok'))
-                <script>window.erpToast(@js(session('success') ?? session('ok')), 'success');</script>
+                <script>window.addEventListener('load', () => window.erpToast(@js(session('success') ?? session('ok')), 'success'), { once: true });</script>
             @endif
             @if (session('error'))
-                <script>window.erpAlert({ icon: 'error', title: 'No fue posible completar la operación', text: @js(session('error')) });</script>
+                <script>window.addEventListener('load', () => window.erpAlert({ icon: 'error', title: 'No fue posible completar la operación', text: @js(session('error')) }), { once: true });</script>
             @endif
             @if (session('status') || session('info'))
-                <script>window.erpToast(@js(session('status') ?? session('info')), 'info');</script>
+                <script>window.addEventListener('load', () => window.erpToast(@js(session('status') ?? session('info')), 'info'), { once: true });</script>
             @endif
             @if ($errors->any())
-                <script>window.erpAlert({ icon: 'error', title: 'Revisa los datos', text: @js($errors->first()) });</script>
+                <script>window.addEventListener('load', () => window.erpAlert({ icon: 'error', title: 'Revisa los datos', text: @js($errors->first()) }), { once: true });</script>
             @endif
             @yield('content')
         </main>
