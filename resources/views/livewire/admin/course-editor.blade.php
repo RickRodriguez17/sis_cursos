@@ -136,7 +136,11 @@
                         <div class="min-w-0 flex-1">
                             <strong class="block truncate">{{ $lesson->title }}</strong>
                             <span class="text-xs text-slate-500">
-                                {{ ucfirst($lesson->video_type) }}
+                                @if ($lesson->video_path)
+                                    Archivo privado
+                                @else
+                                    <span class="font-semibold text-amber-600">Video pendiente de subir</span>
+                                @endif
                                 @if ($lesson->is_preview)
                                     · <span class="font-semibold text-emerald-600">Preview</span>
                                 @endif
@@ -172,6 +176,16 @@
                             >
                                 <i class="bi bi-trash3"></i>
                             </button>
+                            @if ($lesson->video_path)
+                                <a
+                                    class="rounded-lg p-2 text-emerald-600 hover:bg-emerald-50"
+                                    href="{{ route('lessons.video', [$course, $lesson]) }}"
+                                    target="_blank"
+                                    title="Ver video"
+                                >
+                                    <i class="bi bi-play-circle"></i>
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -204,66 +218,64 @@
                             <x-input-error :messages="$message" />
                         @enderror
                     </div>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label class="erp-label">Fuente</label>
-                            <select class="erp-input" wire:model.live="videoType">
-                                <option value="youtube">URL de YouTube</option>
-                                <option value="vimeo">URL de Vimeo</option>
-                                <option value="file">Archivo de video</option>
-                            </select>
-                            @error('videoType')
-                                <x-input-error :messages="$message" />
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="erp-label">Duración (segundos)</label>
-                            <input
-                                class="erp-input"
-                                wire:model="duration"
-                                type="number"
-                                placeholder="Ej. 420"
-                            >
-                            @error('duration')
-                                <x-input-error :messages="$message" />
-                            @enderror
+                    <div>
+                        <label class="erp-label">Duración (segundos)</label>
+                        <input
+                            class="erp-input"
+                            wire:model="duration"
+                            type="number"
+                            placeholder="Ej. 420"
+                        >
+                        @error('duration')
+                            <x-input-error :messages="$message" />
+                        @enderror
+                    </div>
+                    <div
+                        x-data="{ uploading: false, progress: 0 }"
+                        x-on:livewire-upload-start="uploading = true"
+                        x-on:livewire-upload-finish="uploading = false; progress = 100"
+                        x-on:livewire-upload-error="uploading = false"
+                        x-on:livewire-upload-progress="progress = $event.detail.progress"
+                    >
+                        <label class="erp-label">Archivo de video</label>
+                        <input
+                            class="erp-input file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:font-semibold file:text-indigo-700"
+                            wire:model="videoFile"
+                            type="file"
+                            accept=".mp4,.webm,.mov,video/mp4,video/webm,video/quicktime"
+                        >
+                        <p class="mt-1 text-xs text-slate-500">
+                            Formatos permitidos: MP4, WebM o MOV. Máximo 512 MB.
+                        </p>
+                        @error('videoFile')
+                            <x-input-error :messages="$message" />
+                        @enderror
+                        <div x-show="uploading" x-cloak class="mt-3">
+                            <div class="mb-1 flex justify-between text-xs font-semibold text-indigo-700">
+                                <span>Subiendo video...</span>
+                                <span x-text="`${progress}%`"></span>
+                            </div>
+                            <div class="h-2 overflow-hidden rounded-full bg-indigo-100">
+                                <div
+                                    class="h-full rounded-full bg-indigo-600 transition-all"
+                                    :style="`width: ${progress}%`"
+                                ></div>
+                            </div>
                         </div>
                     </div>
-                    @if ($videoType === 'file')
-                        <div>
-                            <label class="erp-label">Archivo de video</label>
-                            <input
-                                class="erp-input file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:font-semibold file:text-indigo-700"
-                                wire:model="videoFile"
-                                type="file"
-                                accept="video/*"
-                            >
-                            @error('videoFile')
-                                <x-input-error :messages="$message" />
-                            @enderror
-                        </div>
-                    @else
-                        <div>
-                            <label class="erp-label">URL del video</label>
-                            <input
-                                class="erp-input"
-                                wire:model="videoUrl"
-                                type="url"
-                                placeholder="https://..."
-                            >
-                            @error('videoUrl')
-                                <x-input-error :messages="$message" />
-                            @enderror
-                        </div>
-                    @endif
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <label class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
                             <input class="erp-checkbox" type="checkbox" wire:model="isPreview">
                             Video de muestra gratis
                         </label>
-                        <button class="erp-button-primary">
+                        <button
+                            class="erp-button-primary"
+                            wire:loading.attr="disabled"
+                            wire:target="videoFile,saveLesson"
+                        >
                             <i class="bi bi-check2"></i>
-                            Guardar video
+                            <span wire:loading.remove wire:target="videoFile,saveLesson">Guardar video</span>
+                            <span wire:loading wire:target="videoFile,saveLesson">Procesando...</span>
                         </button>
                     </div>
                 </form>

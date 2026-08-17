@@ -13,6 +13,7 @@ Route::view('/', 'home')->name('home');
 Route::get('/cursos', [CourseController::class, 'index'])->name('courses.index');
 Route::get('/cursos/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
 Route::get('/cursos/{course:slug}/lecciones/{lesson}', [CourseController::class, 'video'])->name('lessons.video');
+Route::get('/cursos/{course:slug}/lecciones/{lesson}/stream', [CourseController::class, 'stream'])->name('lessons.stream');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/registro', [AuthController::class, 'showRegister'])->name('register');

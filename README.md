@@ -47,7 +47,7 @@ SQLite es la opción de desarrollo por defecto. Para MySQL configura `DB_CONNECT
 
 El catálogo público está en `/cursos`. Los clientes pueden registrarse, agregar varios cursos al carrito y generar una orden con un único pago. Después de confirmar el pago, las inscripciones se crean automáticamente y aparecen en `/mis-cursos`.
 
-Los administradores gestionan el catálogo desde `/admin/cursos`: pueden crear, editar, publicar, despublicar y eliminar cursos, además de administrar sus videos, previews, orden y fuente (YouTube, Vimeo o archivo privado).
+Los administradores gestionan el catálogo desde `/admin/cursos`: pueden crear, editar, publicar, despublicar y eliminar cursos, además de administrar sus videos, previews y orden. Cada lección requiere un archivo de video subido manualmente; se aceptan MP4, WebM y MOV.
 
 ## Pagos
 
@@ -73,4 +73,30 @@ El webhook público es `POST /pagos/webhook/{gateway}`. Si `LIBELULA_WEBHOOK_SEC
 
 ## Seguridad de videos
 
-Los archivos de video se guardan en el disco privado `local`. La ruta de lección valida que el usuario tenga una inscripción o que la lección sea preview antes de servir el archivo.
+Los archivos de video se guardan en el disco privado `local`, fuera de `/public/storage`. La página `/cursos/{curso}/lecciones/{leccion}` muestra un reproductor propio y entrega los bytes desde una ruta de streaming autorizada. El servidor valida que el usuario tenga una inscripción o que la lección sea preview antes de servir el archivo. El streaming soporta rangos HTTP para permitir adelantar videos grandes.
+
+## Subidas de video
+
+La aplicación limita los videos a 512 MB y Livewire usa una carga temporal privada con validación de tipo MIME. Para desarrollo con el servidor integrado de PHP, inicia el proceso con límites suficientes:
+
+```bash
+php -c php-dev.ini \
+    artisan serve --host=127.0.0.1 --port=8000
+```
+
+En producción, configura como mínimo los siguientes valores en `php.ini`:
+
+```ini
+upload_max_filesize = 512M
+post_max_size = 520M
+max_execution_time = 300
+memory_limit = 512M
+```
+
+Si usas nginx, agrega al bloque correspondiente:
+
+```nginx
+client_max_body_size 520M;
+```
+
+Después de modificar PHP-FPM o nginx, reinicia el servicio correspondiente. Si el archivo supera estos límites, el formulario muestra un error de validación en lugar de intentar guardar una carga incompleta.

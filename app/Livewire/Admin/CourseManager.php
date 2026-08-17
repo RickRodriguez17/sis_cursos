@@ -19,7 +19,9 @@ class CourseManager extends Component
 
     public function delete(int $courseId): void
     {
-        Course::findOrFail($courseId)->delete();
+        $course = Course::with('lessons')->findOrFail($courseId);
+        $course->lessons->each->delete();
+        $course->delete();
         $this->dispatch('toast', message: 'Curso eliminado.', type: 'success');
     }
 
